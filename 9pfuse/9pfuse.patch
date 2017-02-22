@@ -1,0 +1,13 @@
+diff --git a/fuse.c b/fuse.c
+index 4d4b895..2515b50 100644
+--- a/fuse.c
++++ b/fuse.c
+@@ -769,7 +769,7 @@ mountfuse(char *mtpt)
+ 		close(p[1]);
+ 		snprint(buf, sizeof buf, "%d", p[0]);
+ 		putenv("_FUSE_COMMFD", buf);
+-		execlp("fusermount", "fusermount", "--", mtpt, nil);
++		execlp("fusermount", "fusermount", "-o", "allow_other", "--", mtpt, nil);
+ 		fprint(2, "exec fusermount: %r\n");
+ 		_exit(1);
+ 	}
