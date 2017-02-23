@@ -57,7 +57,7 @@ do
   # Mount storage
   mkdir -p /dev/shm/storage-9pfs
   test -d /mnt/private || ln -s /dev/shm/storage-9pfs /mnt/private
-  /usr/local/bin/9pfuse -D 127.0.0.1:564 /dev/shm/storage-9pfs
+  /usr/local/bin/9pfuse 127.0.0.1:564 /dev/shm/storage-9pfs
   FUSE_PID=$?
 
   wait $SOCAT_PID
