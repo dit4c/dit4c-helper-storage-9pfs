@@ -57,9 +57,13 @@ do
   # Mount storage
   (umask 0000 && mkdir -p /dev/shm/storage-9pfs)
   test -d /mnt/private || (umask 0000 && ln -s /dev/shm/storage-9pfs /mnt/private)
-  mount -t 9p \
-    -o trans=unix,cache=mmap,version=9p2000,access=any,dfltuid=0,dfltgid=0 \
-    /dev/shm/9p.sock /dev/shm/storage-9pfs || true
+  until mount -t 9p \
+    -o trans=unix,cache=mmap,version=9p2000,mode=0777,access=any,dfltuid=0,dfltgid=0 \
+    /dev/shm/9p.sock /dev/shm/storage-9pfs
+  do
+    echo "Waiting to retry mount"
+    sleep 1
+  done
 
   wait $SOCAT_PID
 done
