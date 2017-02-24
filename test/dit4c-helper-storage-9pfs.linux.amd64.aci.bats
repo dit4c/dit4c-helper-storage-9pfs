@@ -30,7 +30,7 @@ teardown() {
 @test "fusermount binary runs" {
   run sudo $RKT run --insecure-options=image --stage1-path=$RKT_STAGE1 \
     $IMAGE \
-    --exec /usr/bin/fusermount -- -V
+    --exec /bin/fusermount -- -V
   echo $output
   [ "$status" -eq 0 ]
 }
