@@ -18,23 +18,6 @@ teardown() {
   [ $(expr "${output}" : ".*Protocols: .*https.*") -ne 0 ]
 }
 
-@test "9pfuse binary runs" {
-  run sudo $RKT run --insecure-options=image --stage1-path=$RKT_STAGE1 \
-    $IMAGE \
-    --exec /usr/local/bin/9pfuse -- --help
-  echo $output
-  [ "$status" -eq 1 ]
-  [ $(expr "${output}" : ".*usage: .*9pfuse.*") -ne 0 ]
-}
-
-@test "fusermount binary runs" {
-  run sudo $RKT run --insecure-options=image --stage1-path=$RKT_STAGE1 \
-    $IMAGE \
-    --exec /usr/bin/fusermount -- -V
-  echo $output
-  [ "$status" -eq 0 ]
-}
-
 @test "nmap binary runs" {
   run sudo $RKT run --insecure-options=image --stage1-path=$RKT_STAGE1 \
     $IMAGE \

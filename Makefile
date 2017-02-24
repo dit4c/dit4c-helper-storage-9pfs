@@ -10,8 +10,8 @@ TARGET_IMAGE=${OUT_DIR}/${NAME}.linux.amd64.aci
 MKDIR_P=mkdir -p
 GPG=gpg2
 
-DEBIAN_DOCKER_IMAGE=debian:8
-DEBIAN_ACI=${BUILD_DIR}/library-debian-8.aci
+ALPINE_DOCKER_IMAGE=alpine:3.5
+ALPINE_ACI=${BUILD_DIR}/library-alpine-3.5.aci
 
 ACBUILD=${BUILD_DIR}/acbuild
 ACBUILD_VERSION=0.4.0
@@ -25,7 +25,6 @@ RKT_VERSION=1.25.0
 ACBUILD=build/acbuild
 RKT=build/rkt/rkt
 BIN_FILES=$(shell find ${BASE_DIR}/bin)
-COMPILED_9PFUSE_BINARY=9pfuse/9pfuse
 
 ${BUILD_DIR}:
 	${MKDIR_P} ${BUILD_DIR}
@@ -42,19 +41,17 @@ ${ACBUILD}: | ${BUILD_DIR}
 ${DOCKER2ACI}: | ${BUILD_DIR}
 	curl -sL ${DOCKER2ACI_URL} | tar xz --touch --strip-components=1 -C ${BUILD_DIR}
 
-${DEBIAN_ACI}: ${DOCKER2ACI}
-	cd ${BUILD_DIR} && ../${DOCKER2ACI} docker://${DEBIAN_DOCKER_IMAGE}
+${ALPINE_ACI}: ${DOCKER2ACI}
+	cd ${BUILD_DIR} && ../${DOCKER2ACI} docker://${ALPINE_DOCKER_IMAGE}
 
-${TARGET_IMAGE}: ${ACBUILD} ${DEBIAN_ACI} ${COMPILED_9PFUSE_BINARY} ${BIN_FILES} install.sh | ${OUT_DIR}
+${TARGET_IMAGE}: ${ACBUILD} ${ALPINE_ACI} ${BIN_FILES} install.sh | ${OUT_DIR}
 	sudo rm -rf .acbuild
-	sudo ${ACBUILD} --debug begin ${DEBIAN_ACI}
-	sudo ${ACBUILD} --debug copy ${COMPILED_9PFUSE_BINARY} /usr/local/bin/9pfuse
+	sudo ${ACBUILD} --debug begin ${ALPINE_ACI}
 	sudo ${ACBUILD} --debug copy-to-dir install.sh /
 	sudo ${ACBUILD} --debug copy-to-dir bin /opt
-	sudo sh -c 'PATH=${shell echo $$PATH}:${BUILD_DIR} ${ACBUILD} --debug run --engine chroot -- bash -c "./install.sh && rm -f install.sh"'
+	sudo sh -c 'PATH=${shell echo $$PATH}:${BUILD_DIR} ${ACBUILD} --debug run --engine chroot -- sh -c "./install.sh && rm -f install.sh"'
 	sudo ${ACBUILD} --debug set-exec -- /opt/bin/run.sh
 	sudo ${ACBUILD} --debug set-name ${NAME}
-	sudo ${ACBUILD} --debug port add 9pfs tcp 564
 	sudo ${ACBUILD} --debug isolator add "os/linux/capabilities-retain-set" cap_isolation.json
 	sudo ${ACBUILD} --debug write --overwrite $@
 	sudo ${ACBUILD} --debug end

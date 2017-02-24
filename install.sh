@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -ex
 
@@ -7,9 +7,9 @@ rm /etc/resolv.conf
 echo nameserver 8.8.8.8 > /etc/resolv.conf
 
 # Install packages
-apt-get update
-apt-get install -y curl openssh-client nmap dnsutils fuse socat
-apt-get clean
+apk update
+apk add curl openssh nmap bind-tools nmap nmap-nselibs nmap-scripts socat
+rm -rf /var/cache/apk/*
 
 # Cleanup DNS config
 rm -f /etc/resolv.conf

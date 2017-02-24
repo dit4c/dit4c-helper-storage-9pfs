@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -ex
 
@@ -42,23 +42,24 @@ do
   TMP_KEY=$(mktemp)
   cat $DIT4C_INSTANCE_PRIVATE_KEY_PKCS1 > $TMP_KEY
 
+  # Register so key setup can be done
   ssh -i $TMP_KEY \
     -o "StrictHostKeyChecking no" -o "UserKnownHostsFile /dev/null" \
     -p $SSH_PORT \
     register@$SSH_HOST $DIT4C_INSTANCE_ID
 
-  socat TCP-LISTEN:564,bind=127.0.0.1,fork,reuseaddr SYSTEM:"ssh -T -i $TMP_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=30 -p $SSH_PORT connect@$SSH_HOST" &
+  # Relay socket connections to 9p server via SSH
+  socat \
+    UNIX-LISTEN:/dev/shm/9p.sock,fork \
+    SYSTEM:"ssh -T -i $TMP_KEY -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ServerAliveInterval=30 -p $SSH_PORT connect@$SSH_HOST" &
   SOCAT_PID=$!
 
-  # Setup /dev/fuse
-  test -c /dev/fuse || mknod /dev/fuse c 10 229
-	chmod 666 /dev/fuse
-
   # Mount storage
-  mkdir -p /dev/shm/storage-9pfs
-  test -d /mnt/private || ln -s /dev/shm/storage-9pfs /mnt/private
-  /usr/local/bin/9pfuse 127.0.0.1:564 /dev/shm/storage-9pfs
-  FUSE_PID=$?
+  (umask 0000 && mkdir -p /dev/shm/storage-9pfs)
+  test -d /mnt/private || (umask 0000 && ln -s /dev/shm/storage-9pfs /mnt/private)
+  mount -t 9p \
+    -o trans=unix,cache=mmap,version=9p2000,access=any,dfltuid=0,dfltgid=0 \
+    /dev/shm/9p.sock /dev/shm/storage-9pfs || true
 
   wait $SOCAT_PID
 done
