@@ -1,0 +1,18 @@
+sudo: required
+dist: trusty
+language: generic
+script: make && make test
+before_deploy:
+- openssl aes-256-cbc -K $encrypted_bbe76fa3d20d_key -iv $encrypted_bbe76fa3d20d_iv -in signing.key.enc -out signing.key -d
+- make deploy
+deploy:
+  provider: releases
+  api_key:
+    secure: OsoDkO8xStVzYvIq4mvSXIbF0eXqNSrzQfITeWOIYC14dEEXj/VAFXs5Gda0hgit7jomEdgLue2355CMoJtOa/qgHwWEO/OjtE2dFEuJjxh7xTgzDnU29NoEcH9rQw4NKreDhKwRXMZhMBPtGhQJTX0s8o/OLrAAVoTEiOspc0rsbdCn5Y6v5JkLZ+XNe/Gwpu5okfNPIzRPdHIctWLxRO37dtPTlM1CJ1kYhEeECIJU6W1XJIkPWbSlyMMXx6gWQEzWj9FDwTC0oZrE0MG0EPjh5t1YF8ma1tS143ZiX7YTri8LrN77sN5TI5/XVsqWjjRGMb0DfeP0EgiGMZx9XWw4WcFrNwHiqEFNxwZuhLyFINDBsvmZ9SCePsw9tEHsH9Qh2virl+3lPhSPNthNrt/OxkoMEWLXKez/qAtd/5VrR2fgAzrnLZJK8qVeK6WWpHRlUH0bYDxXidG7OX4yPj7BaHnslCN7YAmXCDdtKKsqSjybVN+8P819riesAIEbl9YP/bm6k2rsWWiyuvCXySYlPVUsZE+llP6dgefrDXmu6XXxelb9VtqP3u7XoFV83/1vHSomYyMotxyCXp9wpQLtvEGWUs4V/+N5SKFs1d1EjoGujBJGMf5jAyfDifbEoNWEWZ5cGzT8StnLCq4tMVYfYecI+dFy6oZjLq6lAnM=
+  file:
+    - dist/dit4c-helper-storage-9pfs.linux.amd64.aci
+    - dist/dit4c-helper-storage-9pfs.linux.amd64.aci.asc
+  skip_cleanup: true
+  on:
+    tags: true
+    repo: dit4c/dit4c-helper-storage-9pfs
